@@ -13,6 +13,7 @@ function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log('Login successful');
+      localStorage.setItem("User",email)
       navigate('/'); // Navigate to the home page after successful login
     } catch (error) {
       console.error('Login error', error);

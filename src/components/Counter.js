@@ -1,26 +1,54 @@
-import React, { useState } from 'react';
-import './Counter.css';
+import React, { useState } from "react";
+import "./Counter.css";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  decrementCount,
+  incrementCount,
+  resetTally,
+  changeTallyName,
+  setTally,
+} from "../redux/reducer";
 
-function Counter({ onDelete }) {
-  const [count, setCount] = useState(0);
-  const [label, setLabel] = useState('Counter');
+function Counter({ index, onDelete }) {
+  const [label, setLabel] = useState("Counter");
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [isEditingInitialValue, setIsEditingInitialValue] = useState(false);
+  const [countInput, setCountInput] = useState(0);
+  const dispatch = useDispatch();
+
+  console.log(useSelector((state) => state.tally.tallys[0]));
+  const count = useSelector((state) => state.tally.tallys[index]?.count);
+  const title = useSelector((state) => state.tally.tallys[index]?.title);
 
   const increment = () => {
-    setCount(count + 1);
+    dispatch(incrementCount({ index }));
   };
 
   const decrement = () => {
-    if (count > 0) {
-      setCount(count - 1);
-    }
+    dispatch(decrementCount({ index }));
   };
 
   const reset = () => {
-    setCount(0);
+    dispatch(resetTally({ index }));
   };
 
+  const handleLable = () => {
+    if (isEditingLabel) {
+      dispatch(changeTallyName({ index, value: label }));
+      setIsEditingLabel(false);
+    } else {
+      setIsEditingLabel(true);
+    }
+  };
+
+  const handleCount = () => {
+    if (isEditingInitialValue) {
+      dispatch(setTally({ index, value: countInput }));
+      setIsEditingInitialValue(false);
+    } else {
+      setIsEditingInitialValue(true);
+    }
+  };
   const handleLabelChange = (e) => {
     setLabel(e.target.value);
   };
@@ -30,7 +58,7 @@ function Counter({ onDelete }) {
       <button className="delete-button" onClick={onDelete}>
         &times;
       </button>
-      <h2>{label}</h2>
+      <h2>{title}</h2>
       <p>Count: {count}</p>
       <div className="button-container">
         <div className="button-row">
@@ -39,30 +67,29 @@ function Counter({ onDelete }) {
         </div>
         <button onClick={reset}>Reset</button>
       </div>
-      <button onClick={() => setIsEditingLabel(!isEditingLabel)}>
-        Edit Label
-      </button>
       {isEditingLabel ? (
         <input
           type="text"
           value={label}
           onChange={handleLabelChange}
-          onBlur={() => setIsEditingLabel(false)}
           autoFocus
         />
       ) : null}
-      <button onClick={() => setIsEditingInitialValue(!isEditingInitialValue)}>
-        Edit Start Value
+      <button onClick={handleLable}>
+        {isEditingLabel ? "Set" : "Edit Label"}
       </button>
+
       {isEditingInitialValue ? (
         <input
           type="number"
-          value={count}
-          onChange={(e) => setCount(parseInt(e.target.value))}
-          onBlur={() => setIsEditingInitialValue(false)}
+          value={countInput}
+          onChange={(e) => setCountInput(parseInt(e.target.value))}
           autoFocus
         />
       ) : null}
+      <button onClick={handleCount}>
+        {isEditingInitialValue ? "Set" : "Edit Start Value"}
+      </button>
     </div>
   );
 }

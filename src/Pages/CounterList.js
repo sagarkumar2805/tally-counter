@@ -1,48 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import Counter from '../components/Counter';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Counter from "../components/Counter";
+import { useDispatch, useSelector } from "react-redux";
+import { addTally, deleteTally } from "../redux/reducer";
 function CounterList() {
-  const [counters, setCounters] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Listen for changes in authentication state
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        // User is not logged in, redirect to login page
-        navigate('/login');
-      }
-    });
-
-    // Clean up the listener when the component unmounts
-    return () => unsubscribe();
-  }, [navigate]);
+  console.log(useSelector((state) => state));
+  const counters = useSelector((state) => state.tally.tallys);
+  const dispatch = useDispatch();
+  const user = localStorage.getItem("User");
+  if (!user) {
+    window.location.href = "/login";
+  }
 
   const addCounter = () => {
-    const newCounter = {
-      id: Date.now(),
-    };
-    setCounters([...counters, newCounter]);
+    dispatch(addTally());
   };
 
-  const deleteCounter = (id) => {
-    const updatedCounters = counters.filter((counter) => counter.id !== id);
-    setCounters(updatedCounters);
+  const deleteCounter = (index) => {
+    dispatch(deleteTally({ index }));
   };
-
+  const handleLogout = () => {
+    localStorage.removeItem("User");
+    window.location.href = "/login";
+  };
   return (
     <div>
       <h1>Tally-Counter App</h1>
       <div>
         <button onClick={addCounter}>Add Counter</button>
+        <button onClick={handleLogout}>Logout</button>
       </div>
+
       <div className="counters">
-        {counters.map((counter) => (
-          <Counter key={counter.id} onDelete={() => deleteCounter(counter.id)} />
+        {counters?.map((_, index) => (
+          <Counter
+            key={index}
+            index={index}
+            onDelete={() => deleteCounter(index)}
+          />
         ))}
       </div>
     </div>
